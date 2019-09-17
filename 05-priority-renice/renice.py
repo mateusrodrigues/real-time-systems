@@ -1,8 +1,6 @@
 import Adafruit_BBIO.GPIO as GPIO
 import Adafruit_BBIO.ADC as ADC
-import math
-import threading
-from threading import Thread
+import time
 import os
 
 l0 = "P8_8"
@@ -35,7 +33,7 @@ def renice():
                 os.system('sudo renice %d %d'%(priority0,processID1))
                 priority1 = ADC.read(pot1)*37-17
                 os.system('sudo renice %d %d'%(priority1,processID2))
-                os.system('clear')
+                time.sleep(1)
         else:
             while 1:
                 carga(300)
