@@ -29,6 +29,12 @@
 
 #include "BlackCore.h"
 
+
+
+
+
+
+
 namespace BlackLib
 {
 

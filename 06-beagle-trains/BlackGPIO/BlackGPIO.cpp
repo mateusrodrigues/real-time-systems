@@ -39,8 +39,7 @@ namespace BlackLib
 {
 
     // ######################################### BLACKCOREGPIO DEFINITION STARTS ######################################### //
-
-    BlackCoreGPIO::BlackCoreGPIO(gpioName pin, direction dir)
+                BlackCoreGPIO::BlackCoreGPIO(gpioName pin, direction dir)
     {
         this->pinNumericName    = static_cast<int>(pin);
         this->pinNumericType    = static_cast<int>(dir);

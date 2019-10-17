@@ -1,9 +1,13 @@
+/**
+ * Autor: Tiago Fernandes de Miranda
+ * Universidade Federal do Rio Grande do Norte
+ */
+
 #include <cstdio>
-#include <cstdio>
-#include <unistd.h>
 #include <pthread.h>
-#include "BlackGPIO.h"
-#include "Adc.h"
+#include <unistd.h>
+#include "BlackGPIO/BlackGPIO.h"
+#include "ADC/Adc.h"
 
 #define WORKSIZE 3
 
@@ -29,8 +33,8 @@ BlackGPIO p10(GPIO_23,output);
 BlackGPIO p11(GPIO_51,output);
 BlackGPIO p12(GPIO_49,output);
 
-int main(void)
-{    
+int main(int argc, char * argv[])
+{
     pthread_t threads[WORKSIZE];
 
     pthread_mutex_init(&m1, NULL);

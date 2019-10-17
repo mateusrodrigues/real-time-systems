@@ -30,10 +30,14 @@
 #ifndef BLACKGPIO_H_
 #define BLACKGPIO_H_
 
-#include "BlackCore.h"
+#include "../BlackCore.h"
 
 #include <fstream>
 #include <string>
+
+
+
+
 
 namespace BlackLib
 {
@@ -377,7 +381,7 @@ namespace BlackLib
             * @sa direction
             * @sa workingMode
             */
-            BlackGPIO(gpioName pn, direction pd, workingMode wm = SecureMode);
+                            BlackGPIO(gpioName pn, direction pd, workingMode wm = SecureMode);
 
             /*! @brief Destructor of BlackGPIO class.
             *
