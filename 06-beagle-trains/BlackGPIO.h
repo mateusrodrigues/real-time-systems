@@ -377,7 +377,7 @@ namespace BlackLib
             * @sa direction
             * @sa workingMode
             */
-                            BlackGPIO(gpioName pn, direction pd, workingMode wm = SecureMode);
+            BlackGPIO(gpioName pn, direction pd, workingMode wm = SecureMode);
 
             /*! @brief Destructor of BlackGPIO class.
             *
