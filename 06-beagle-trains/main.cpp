@@ -11,7 +11,8 @@ using namespace BlackLib;
 void *trem1(void *arg);
 void *trem2(void *arg);
 void *trem3(void *arg);
-void L(int i, int j, int s, BlackGPIO* pin1, BlackGPIO* pin2);
+void L(int i, int j, double vel, BlackGPIO* pin1, BlackGPIO* pin2);
+void *thread_potenciometro(void *arg);
 
 pthread_mutex_t m1, m2;
 
@@ -38,7 +39,6 @@ double vel1, vel2, vel3;
 int main(int argc, char * argv[])
 {
     pthread_t threads[WORKSIZE];
-    pthread_t potenciometro;
 
     pthread_mutex_init(&m1, NULL);
     pthread_mutex_init(&m2, NULL);
@@ -60,14 +60,14 @@ void *trem1(void *arg)
 {
     while (1)
     {
-        L(1, 1, 2, &p4, &p1);
-        L(1, 2, 2, &p1, &p2);
+        L(1, 1, vel1, &p4, &p1);
+        L(1, 2, vel1, &p1, &p2);
 
         pthread_mutex_lock(&m1);
-        L(1, 3, 2, &p2, &p3);
+        L(1, 3, vel1, &p2, &p3);
         pthread_mutex_unlock(&m1);
 
-        L(1, 4, 2, &p3, &p4);
+        L(1, 4, vel1, &p3, &p4);
     }
 }
 
@@ -76,16 +76,16 @@ void *trem2(void *arg)
     while (1)
     {
         pthread_mutex_lock(&m1);
-        L(2, 5, 1, &p8, &p5);
+        L(2, 5, vel2, &p8, &p5);
         pthread_mutex_unlock(&m1);
 
-        L(2, 6, 1, &p5, &p6);
+        L(2, 6, vel2, &p5, &p6);
 
         pthread_mutex_lock(&m2);
-        L(2, 7, 1, &p6, &p7);
+        L(2, 7, vel2, &p6, &p7);
         pthread_mutex_unlock(&m2);
 
-        L(2, 8, 1, &p7, &p8);
+        L(2, 8, vel2, &p7, &p8);
     }
 }
 
@@ -94,21 +94,22 @@ void *trem3(void *arg)
     while (1)
     {
         pthread_mutex_lock(&m2);
-        L(3, 9, 3, &p12, &p9);
+        L(3, 9, vel3, &p12, &p9);
         pthread_mutex_unlock(&m2);
 
-        L(3, 10, 3, &p9, &p10);
-        L(3, 11, 3, &p10, &p11);
-        L(3, 12, 3, &p11, &p12);
+        L(3, 10, vel3, &p9, &p10);
+        L(3, 11, vel3, &p10, &p11);
+        L(3, 12, vel3, &p11, &p12);
     }
 }
 
-void L(int i, int j, int s, BlackGPIO* pin1, BlackGPIO* pin2)
+void L(int i, int j, double vel, BlackGPIO* pin1, BlackGPIO* pin2)
 {
     (*pin1).setValue(low);
     (*pin2).setValue(high);
     printf("Eu sou o trem %d no trilho %d\n", i, j);
-    sleep(s);
+    //sleep(vel);
+    usleep(int((2.3 - ((vel / 50.0) + 0.1)) * 2000000));
 }
 
 void *thread_potenciometro(void *arg){
