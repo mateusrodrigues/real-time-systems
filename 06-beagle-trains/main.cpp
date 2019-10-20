@@ -1,8 +1,3 @@
-/**
- * Autor: Tiago Fernandes de Miranda
- * Universidade Federal do Rio Grande do Norte
- */
-
 #include <cstdio>
 #include <pthread.h>
 #include <unistd.h>
@@ -16,7 +11,7 @@ using namespace BlackLib;
 void *trem1(void *arg);
 void *trem2(void *arg);
 void *trem3(void *arg);
-void L(int i, int j, int s, BlackGPIO* pin);
+void L(int i, int j, int s, BlackGPIO* pin1, BlackGPIO* pin2);
 
 pthread_mutex_t m1, m2;
 
@@ -55,14 +50,14 @@ void *trem1(void *arg)
 {
     while (1)
     {
-        L(1, 1, 2, &p1);
-        L(1, 2, 2, &p2);
+        L(1, 1, 2, &p4, &p1);
+        L(1, 2, 2, &p1, &p2);
 
         pthread_mutex_lock(&m1);
-        L(1, 3, 2, &p3);
+        L(1, 3, 2, &p2, &p3);
         pthread_mutex_unlock(&m1);
 
-        L(1, 4, 2, &p4);
+        L(1, 4, 2, &p3, &p4);
     }
 }
 
@@ -71,16 +66,16 @@ void *trem2(void *arg)
     while (1)
     {
         pthread_mutex_lock(&m1);
-        L(2, 5, 1, &p5);
+        L(2, 5, 1, &p8, &p5);
         pthread_mutex_unlock(&m1);
 
-        L(2, 6, 1, &p6);
+        L(2, 6, 1, &p5, &p6);
 
         pthread_mutex_lock(&m2);
-        L(2, 7, 1, &p7);
+        L(2, 7, 1, &p6, &p7);
         pthread_mutex_unlock(&m2);
 
-        L(2, 8, 1, &p8);
+        L(2, 8, 1, &p7, &p8);
     }
 }
 
@@ -89,21 +84,19 @@ void *trem3(void *arg)
     while (1)
     {
         pthread_mutex_lock(&m2);
-        L(3, 9, 3, &p9);
+        L(3, 9, 3, &p12, &p9);
         pthread_mutex_unlock(&m2);
 
-        L(3, 10, 3, &p10);
-        L(3, 11, 3, &p11);
-        L(3, 12, 3, &p12);
+        L(3, 10, 3, &p9, &p10);
+        L(3, 11, 3, &p10, &p11);
+        L(3, 12, 3, &p11, &p12);
     }
 }
 
-void L(int i, int j, int s, BlackGPIO* pin)
+void L(int i, int j, int s, BlackGPIO* pin1, BlackGPIO* pin2)
 {
-    // leds[j - 1].setValue(high);
-    (*pin).setValue(high);
+    (*pin1).setValue(low);
+    (*pin2).setValue(high);
     printf("Eu sou o trem %d no trilho %d\n", i, j);
     sleep(s);
-    (*pin).setValue(low);
-    // leds[j - 1].setValue(low);
 }
