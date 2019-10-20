@@ -4,7 +4,7 @@
 #include "BlackGPIO/BlackGPIO.h"
 #include "ADC/Adc.h"
 
-#define WORKSIZE 3
+#define WORKSIZE 4
 
 using namespace BlackLib;
 
@@ -25,12 +25,20 @@ BlackGPIO p7(GPIO_67,output);
 BlackGPIO p8(GPIO_69,output);
 BlackGPIO p9(GPIO_45,output);
 BlackGPIO p10(GPIO_23,output);
-BlackGPIO p11(GPIO_51,output);
-BlackGPIO p12(GPIO_49,output);
+BlackGPIO p11(GPIO_47,output);
+BlackGPIO p12(GPIO_27,output);
+
+
+ADC pot1(AIN0);
+ADC pot2(AIN5);
+ADC pot3(AIN6);
+
+double vel1, vel2, vel3;
 
 int main(int argc, char * argv[])
 {
     pthread_t threads[WORKSIZE];
+    pthread_t potenciometro;
 
     pthread_mutex_init(&m1, NULL);
     pthread_mutex_init(&m2, NULL);
@@ -38,10 +46,12 @@ int main(int argc, char * argv[])
     pthread_create(&(threads[1]), NULL, trem1, NULL);
     pthread_create(&(threads[2]), NULL, trem2, NULL);
     pthread_create(&(threads[3]), NULL, trem3, NULL);
+    pthread_create(&(threads[4]), NULL, thread_potenciometro, NULL);
 
     pthread_join(threads[1], NULL);
     pthread_join(threads[2], NULL);
     pthread_join(threads[3], NULL);
+    pthread_join(threads[4], NULL);
 
     return 0;
 }
@@ -100,3 +110,18 @@ void L(int i, int j, int s, BlackGPIO* pin1, BlackGPIO* pin2)
     printf("Eu sou o trem %d no trilho %d\n", i, j);
     sleep(s);
 }
+
+void *thread_potenciometro(void *arg){
+
+	while (1){
+		vel1 = pot1.getPercentValue();
+		vel2 = pot2.getPercentValue();
+		vel3 = pot3.getPercentValue();
+		//cout <<"ESCRITA: "<< vel1 <<"  "<< vel2 <<"  "<< vel3 << endl;
+        printf("ESCRITA vel1:%lf vel2:%lf vel3:%lf\n", vel1, vel2, vel3);
+		//sleep(1);
+		usleep(1000000);
+	}
+	exit(0);
+}
+
