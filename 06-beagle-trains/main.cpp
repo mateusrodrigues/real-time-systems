@@ -108,8 +108,7 @@ void L(int i, int j, double vel, BlackGPIO* pin1, BlackGPIO* pin2)
     (*pin1).setValue(low);
     (*pin2).setValue(high);
     printf("Eu sou o trem %d no trilho %d\n", i, j);
-    //sleep(vel);
-    usleep(int((2.3 - ((vel / 50.0) + 0.1)) * 2000000));
+    usleep(int(100/(vel+10)  * 200000));
 }
 
 void *thread_potenciometro(void *arg){
@@ -118,9 +117,7 @@ void *thread_potenciometro(void *arg){
 		vel1 = pot1.getPercentValue();
 		vel2 = pot2.getPercentValue();
 		vel3 = pot3.getPercentValue();
-		//cout <<"ESCRITA: "<< vel1 <<"  "<< vel2 <<"  "<< vel3 << endl;
-        printf("ESCRITA vel1:%lf vel2:%lf vel3:%lf\n", vel1, vel2, vel3);
-		//sleep(1);
+        printf("VELOCIDADES vel1:%lf vel2:%lf vel3:%lf\n", vel1, vel2, vel3);
 		usleep(1000000);
 	}
 	exit(0);
