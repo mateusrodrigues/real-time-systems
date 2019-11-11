@@ -5,7 +5,7 @@
 #include "BlackGPIO/BlackGPIO.h"
 #include "ADC/Adc.h"
 
-#define WORKSIZE 
+#define WORKSIZE 4
 
 using namespace BlackLib;
 
@@ -75,14 +75,12 @@ void *trem1(void *arg)
     {
         L(1, 1, vel1, &p3, &p1);
 
+        pthread_mutex_lock(&m3);
         pthread_mutex_lock(&m1);
         L(1, 2, vel1, &p1, &p2);
         pthread_mutex_unlock(&m1);
-
-        pthread_mutex_lock(&m3);
         L(1, 3, vel1, &p2, &p3);
         pthread_mutex_unlock(&m3);
-
     }
 }
 
@@ -103,7 +101,6 @@ void *trem2(void *arg)
         pthread_mutex_lock(&m1);
         L(2, 7, vel2, &p6, &p7);
         pthread_mutex_unlock(&m1);
-        
     }
 }
 
@@ -113,11 +110,10 @@ void *trem3(void *arg)
     {
         L(3, 8, vel3, &p10, &p8);
 
+        pthread_mutex_lock(&m2);
         pthread_mutex_lock(&m5);
         L(3, 9, vel3, &p8, &p9);
         pthread_mutex_unlock(&m5);
-
-        pthread_mutex_lock(&m2);
         L(3, 10, vel3, &p9, &p10);
         pthread_mutex_unlock(&m2);
     }
@@ -152,7 +148,6 @@ void L(int i, int j, double vel, BlackGPIO* pin1, BlackGPIO* pin2)
 }
 
 void *thread_potenciometro(void *arg){
-
 	while (1){
 		vel1 = pot1.getPercentValue();
 		vel2 = pot2.getPercentValue();
