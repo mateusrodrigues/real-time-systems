@@ -123,12 +123,10 @@ void *trem4(void *arg)
 {
     while (1)
     {
-        printf("VOU ACENDER HEIN\n");
         L(4, 11, vel4, &p14, &p11);
 
         pthread_mutex_lock(&m3);
         L(4, 12, vel4, &p11, &p12);
-        printf("APAGUEI HEIN\n");
         pthread_mutex_unlock(&m3);
 
         pthread_mutex_lock(&m4);
