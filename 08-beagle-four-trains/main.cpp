@@ -32,15 +32,15 @@ BlackGPIO p8(GPIO_47,output);
 BlackGPIO p9(GPIO_23,output);
 BlackGPIO p10(GPIO_45,output);
 
-BlackGPIO p11(GPIO_63,output);
+BlackGPIO p11(GPIO_7,output);
 BlackGPIO p12(GPIO_22,output);
 BlackGPIO p13(GPIO_26,output);
 BlackGPIO p14(GPIO_27,output);
 
-ADC pot1(AIN0);
-ADC pot2(AIN5);
-ADC pot3(AIN6);
-ADC pot4(AIN2);
+ADC pot1(AIN3);
+ADC pot2(AIN2);
+ADC pot3(AIN1);
+ADC pot4(AIN4);
 
 double vel1, vel2, vel3, vel4;
 
@@ -123,10 +123,12 @@ void *trem4(void *arg)
 {
     while (1)
     {
+        printf("VOU ACENDER HEIN\n");
         L(4, 11, vel4, &p14, &p11);
 
         pthread_mutex_lock(&m3);
         L(4, 12, vel4, &p11, &p12);
+        printf("APAGUEI HEIN\n");
         pthread_mutex_unlock(&m3);
 
         pthread_mutex_lock(&m4);
