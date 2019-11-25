@@ -3,8 +3,11 @@
 #include <unistd.h>
 #include "BlackGPIO/BlackGPIO.h"
 #include "ADC/Adc.h"
+#include <sys/socket.h>
+#include <arpa/inet.h>
 
-#define WORKSIZE 5
+#define WORKSIZE        6
+#define MULTICAST_ADDR  "225.0.0.37"
 
 using namespace BlackLib;
 
@@ -13,7 +16,9 @@ void *trem2(void *arg);
 void *trem3(void *arg);
 void *trem4(void *arg);
 void L(int i, int j, double vel, BlackGPIO* pin1, BlackGPIO* pin2);
-void *thread_potenciometro(void *arg);
+//void *thread_potenciometro(void *arg);
+void *thread_envia(void *arg);
+void *thread_recebe(void *arg);
 
 pthread_mutex_t m1, m2, m3, m4, m5;
 
@@ -41,6 +46,7 @@ ADC pot3(AIN1);
 ADC pot4(AIN4);
 
 double vel1, vel2, vel3, vel4;
+unsigned short portaLeitura = 6601;
 
 int main(int argc, char * argv[])
 {
@@ -52,12 +58,14 @@ int main(int argc, char * argv[])
     pthread_mutex_init(&m4, NULL);
     pthread_mutex_init(&m5, NULL);
 
-    pthread_create(&(threads[1]), NULL, trem1, NULL);
-    pthread_create(&(threads[2]), NULL, trem2, NULL);
-    pthread_create(&(threads[3]), NULL, trem3, NULL);
-    pthread_create(&(threads[4]), NULL, trem4, NULL);
-    pthread_create(&(threads[5]), NULL, thread_potenciometro, NULL);
+    pthread_create(&(threads[0]), NULL, trem1, NULL);
+    pthread_create(&(threads[1]), NULL, trem2, NULL);
+    pthread_create(&(threads[2]), NULL, trem3, NULL);
+    pthread_create(&(threads[3]), NULL, trem4, NULL);
+    pthread_create(&(threads[4]), NULL, thread_envia, NULL);
+    pthread_create(&(threads[5]), NULL, thread_recebe, NULL);
 
+    pthread_join(threads[0], NULL);
     pthread_join(threads[1], NULL);
     pthread_join(threads[2], NULL);
     pthread_join(threads[3], NULL);
@@ -141,18 +149,108 @@ void L(int i, int j, double vel, BlackGPIO* pin1, BlackGPIO* pin2)
 {
     (*pin1).setValue(low);
     (*pin2).setValue(high);
-    printf("Eu sou o trem %d no trilho %d\n", i, j);
-    usleep(int(100/(vel+10)  * 200000));
+    //printf("Eu sou o trem %d no trilho %d\n", i, j);
+    usleep(int(100 / ((vel * 100) + 10) * 200000));
 }
 
-void *thread_potenciometro(void *arg){
+// void *thread_potenciometro(void *arg){
+// 	while (1){
+// 		vel1 = pot1.getPercentValue();
+// 		vel2 = pot2.getPercentValue();
+// 		vel3 = pot3.getPercentValue();
+//         vel4 = pot4.getPercentValue();
+//         printf("VELOCIDADES vel1:%lf vel2:%lf vel3:%lf vel4:%lf\n", vel1, vel2, vel3, vel4);
+// 		usleep(1000000);
+// 	}
+// 	exit(0);
+// }
+
+void *thread_envia(void *arg){
+	int sockfd;
+	int len;
+	socklen_t len_recv;
+	struct sockaddr_in address;
+	int result;
+    double velocidades[4];
+
+	unsigned short porta = 6601;
+	sockfd = socket(AF_INET, SOCK_DGRAM, 0); // criacao do socket
+	address.sin_family = AF_INET;
+	address.sin_addr.s_addr = inet_addr(MULTICAST_ADDR);
+	address.sin_port = htons(porta);
+	len = sizeof(address);
+
 	while (1){
-		vel1 = pot1.getPercentValue();
-		vel2 = pot2.getPercentValue();
-		vel3 = pot3.getPercentValue();
-        vel4 = pot4.getPercentValue();
-        printf("VELOCIDADES vel1:%lf vel2:%lf vel3:%lf vel4:%lf\n", vel1, vel2, vel3, vel4);
+		velocidades[0] = pot1.getPercentValue() / 100;
+		velocidades[1] = pot2.getPercentValue() / 100;
+		velocidades[2] = pot3.getPercentValue() / 100;
+		velocidades[3] = pot4.getPercentValue() / 100;
+		
+        printf("ENVIO vel1:%lf vel2:%lf vel3:%lf vel4:%lf\n", velocidades[0],
+            velocidades[1], velocidades[2], velocidades[3]);
+
+		sendto(sockfd, &velocidades, sizeof(velocidades), 0, (struct sockaddr *)&address, len);
+		
 		usleep(1000000);
 	}
+
+	exit(0);
+}
+
+void *thread_recebe(void *arg){
+	int server_sockfd, client_sockfd;
+	size_t server_len;
+	socklen_t client_len;
+	struct sockaddr_in server_address;
+	struct sockaddr_in client_address;
+	struct ip_mreq mreq; // para endere�o multicast
+
+	if ((server_sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0){
+		printf("socket error.\n");
+		exit(1);
+	}
+
+	server_address.sin_family = AF_INET;
+	server_address.sin_addr.s_addr = htonl(INADDR_ANY);
+	server_address.sin_port = htons(portaLeitura);
+	
+	server_len = sizeof(server_address);
+
+	if (bind(server_sockfd, (struct sockaddr *)&server_address, server_len) < 0){
+		perror("bind error.\n");
+		exit(1);
+	}
+
+	// use setsockopt() para requerer inscri��o num grupo multicast
+	mreq.imr_multiaddr.s_addr = inet_addr(MULTICAST_ADDR);
+	mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+
+	if (setsockopt(server_sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0){
+		perror("setsockopt");
+		exit(1);
+	}
+	printf(" IPPROTO_IP = %d\n", IPPROTO_IP);
+	printf(" SOL_SOCKET = %d\n", SOL_SOCKET);
+	printf(" IP_ADD_MEMBERSHIP = %d \n", IP_ADD_MEMBERSHIP);
+	
+	double velocidades[4];
+	while (1)
+	{
+		client_len = sizeof(client_address);
+		if (recvfrom(server_sockfd, &velocidades, sizeof(velocidades), 0, (struct sockaddr *)&client_address, &client_len) < 0)
+		{
+			perror("RECVFROM() error.\n");
+			exit(1);
+		}
+
+		vel1 = velocidades[0];
+		vel2 = velocidades[1];
+		vel3 = velocidades[2];
+		vel4 = velocidades[3];
+
+		printf ("RECEBIMENTO: %f %f %f %f\n", velocidades[0], velocidades[1], velocidades[2], velocidades[3]);
+	}
+
+	close(server_sockfd);
 	exit(0);
 }
