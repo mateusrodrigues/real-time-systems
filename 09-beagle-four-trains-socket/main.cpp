@@ -16,7 +16,6 @@ void *trem2(void *arg);
 void *trem3(void *arg);
 void *trem4(void *arg);
 void L(int i, int j, double vel, BlackGPIO* pin1, BlackGPIO* pin2);
-//void *thread_potenciometro(void *arg);
 void *thread_envia(void *arg);
 void *thread_recebe(void *arg);
 
@@ -153,18 +152,6 @@ void L(int i, int j, double vel, BlackGPIO* pin1, BlackGPIO* pin2)
     usleep(int(100 / ((vel * 100) + 10) * 200000));
 }
 
-// void *thread_potenciometro(void *arg){
-// 	while (1){
-// 		vel1 = pot1.getPercentValue();
-// 		vel2 = pot2.getPercentValue();
-// 		vel3 = pot3.getPercentValue();
-//         vel4 = pot4.getPercentValue();
-//         printf("VELOCIDADES vel1:%lf vel2:%lf vel3:%lf vel4:%lf\n", vel1, vel2, vel3, vel4);
-// 		usleep(1000000);
-// 	}
-// 	exit(0);
-// }
-
 void *thread_envia(void *arg){
 	int sockfd;
 	int len;
@@ -174,7 +161,7 @@ void *thread_envia(void *arg){
     double velocidades[4];
 
 	unsigned short porta = 6601;
-	sockfd = socket(AF_INET, SOCK_DGRAM, 0); // criacao do socket
+	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = inet_addr(MULTICAST_ADDR);
 	address.sin_port = htons(porta);
@@ -203,7 +190,7 @@ void *thread_recebe(void *arg){
 	socklen_t client_len;
 	struct sockaddr_in server_address;
 	struct sockaddr_in client_address;
-	struct ip_mreq mreq; // para endere�o multicast
+	struct ip_mreq mreq;
 
 	if ((server_sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0){
 		printf("socket error.\n");
@@ -221,7 +208,6 @@ void *thread_recebe(void *arg){
 		exit(1);
 	}
 
-	// use setsockopt() para requerer inscri��o num grupo multicast
 	mreq.imr_multiaddr.s_addr = inet_addr(MULTICAST_ADDR);
 	mreq.imr_interface.s_addr = htonl(INADDR_ANY);
 
